@@ -29,12 +29,21 @@ namespace Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(conn=>
+            services.AddDbContext<DataContext>(conn =>
             {
                 conn.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
                 //conn.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
-            services.AddTransient<IUserService,UserService>();
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("AllowClient", policy =>
+                 {
+                     policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000","https://localhost:3000");
+                 }
+                );
+            }
+            );
+            services.AddTransient<IUserService, UserService>();
             services.AddControllers();
         }
 
@@ -51,6 +60,8 @@ namespace Api
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseCors("AllowClient");
 
             app.UseEndpoints(endpoints =>
             {

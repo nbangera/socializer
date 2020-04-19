@@ -14,7 +14,7 @@ namespace Application
 
         public Task<string> Create(User user);
         public Task<bool> Update(User user);
-        public Task<User> UsersByUid(string uid);
+        public Task<User> UsersByUid(string uid);        
 
     }
     public class UserService : IUserService
@@ -38,6 +38,7 @@ namespace Application
             var uid = savedUser.Entity.UID;
             return uid.ToString();
         }
+
         public async Task<bool> Update(User user)
         {
             var currentUser = await _dataContext.Users.SingleOrDefaultAsync(t => t.Id == user.Id);
@@ -47,9 +48,9 @@ namespace Application
         }
         public async Task<User> UsersByUid(string uid)
         {
-            var currentUser = await _dataContext.Users.Where(t => t.UID.ToString() == uid).SingleOrDefaultAsync();
+            var userId = new Guid(uid);
+            var currentUser = await _dataContext.Users.Where(t => t.UID == userId).SingleOrDefaultAsync();
             return currentUser;
         }
-
     }
 }
