@@ -14,6 +14,8 @@ using Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Application;
+using MediatR;
+using Application.Activities;
 
 namespace Api
 {
@@ -44,6 +46,7 @@ namespace Api
             }
             );
             services.AddTransient<IUserService, UserService>();
+            services.AddMediatR(typeof(List.Handler).Assembly);
             services.AddControllers();
         }
 
