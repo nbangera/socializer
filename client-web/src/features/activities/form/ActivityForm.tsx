@@ -1,23 +1,15 @@
-import React, { useState,FormEvent } from "react";
+import React, { useState, FormEvent, useContext } from "react";
 import { Segment, Form, Button, TextArea, Input } from "semantic-ui-react";
 import { IActivity } from "../../../app/models/Activity";
 import { v4 as uuid } from "uuid";
+import { observer } from "mobx-react-lite";
+import ActivityStore from "../../../app/stores/activityStore";
 
 interface IProps {
   activity: IActivity;
-  setEditMode: (editMode: boolean) => void;
-  handleActivityCreate: (activity: IActivity) => void;
-  handleActivityEdit: (activity: IActivity) => void;
-  submitting:boolean;
 }
 
-export const ActivityForm: React.FC<IProps> = ({
-  setEditMode,
-  activity: initialiseFormState,
-  handleActivityCreate,
-  handleActivityEdit,
-  submitting
-}) => {
+const ActivityForm: React.FC<IProps> = ({ activity: initialiseFormState }) => {
   const initializeCreateForm = () => {
     if (initialiseFormState) return initialiseFormState;
     else {
@@ -33,6 +25,14 @@ export const ActivityForm: React.FC<IProps> = ({
     }
   };
 
+  const activityStore = useContext(ActivityStore);
+  const {
+    createActivity,
+    editActivity,
+    submitting,
+    cancelForm,
+  } = activityStore;
+
   const [activity, setActivity] = useState<IActivity>(initializeCreateForm);
 
   const handleInputChange = (
@@ -43,15 +43,15 @@ export const ActivityForm: React.FC<IProps> = ({
     setActivity({ ...activity, [name]: value });
   };
 
-  const handleSubmit = () => {    
+  const handleSubmit = () => {
     if (activity.id.length === 0) {
       let newActivity = {
         ...activity,
         id: uuid(),
       };
-      handleActivityCreate(newActivity);
+      createActivity(newActivity);
     } else {
-      handleActivityEdit(activity);
+      editActivity(activity);
     }
   };
 
@@ -121,13 +121,14 @@ export const ActivityForm: React.FC<IProps> = ({
           loading={submitting}
         ></Button>
         <Button
-          onClick={() => setEditMode(false)}
+          onClick={() => cancelForm()}
           content="Cancel"
           floated="right"
           type="Button"
-          loading={submitting}
         />
       </Form>
     </Segment>
   );
 };
+
+export default observer(ActivityForm);

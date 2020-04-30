@@ -1,28 +1,26 @@
-import React from "react";
-import { IActivity } from "../../../app/models/Activity";
+import React, { useContext } from "react";
 import { Card, Image, Button } from "semantic-ui-react";
+import ActivityStore from "../../../app/stores/activityStore";
 
-interface IProp {
-  activity: IActivity;
-  setEditMode:(editMode:boolean)=>void;
-  setSelectedActivity:(activity:IActivity|null)=> void
-}
+export const ActivityDetail: React.FC = () => {
 
-export const ActivityDetail: React.FC<IProp> = ({ activity,setEditMode,setSelectedActivity }) => {
+  const activityStore = useContext(ActivityStore)
+  const {selectedActivity:activity,openEditForm,cancelDetailForm} = activityStore;
+  
   return (
     <Card fluid>
-      <Image src={`/assets/categoryimages/${activity.category}.jpg`} wrapped ui={false} />
+      <Image src={`/assets/categoryimages/${activity!.category}.jpg`} wrapped ui={false} />
       <Card.Content>
-        <Card.Header>{activity.title}</Card.Header>
+        <Card.Header>{activity!.title}</Card.Header>
         <Card.Meta>
-          <span className="date">{activity.date}</span>
+          <span className="date">{activity!.date}</span>
         </Card.Meta>
-        <Card.Description>{activity.description}</Card.Description>
+        <Card.Description>{activity!.description}</Card.Description>
       </Card.Content>
       <Card.Content extra>
         <Button.Group width={2}>
-          <Button onClick={()=>setEditMode(true)} basic color="blue" content="Edit"></Button>
-          <Button basic onClick={()=>setSelectedActivity(null)} color="grey" content="Cancel"></Button>
+          <Button onClick={()=>openEditForm(activity!.id)} basic color="blue" content="Edit"></Button>
+          <Button basic onClick={()=>cancelDetailForm()} color="grey" content="Cancel"></Button>
         </Button.Group>
       </Card.Content>
     </Card>
