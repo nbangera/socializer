@@ -1,5 +1,12 @@
 import React, { useState, FormEvent, useContext, useEffect } from "react";
-import { Segment, Form, Button, TextArea, Input } from "semantic-ui-react";
+import {
+  Segment,
+  Form,
+  Button,
+  TextArea,
+  Input,
+  Grid,
+} from "semantic-ui-react";
 import { IActivity } from "../../../app/models/Activity";
 import { v4 as uuid } from "uuid";
 import { observer } from "mobx-react-lite";
@@ -71,78 +78,82 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParams>> = ({
   };
 
   return (
-    <Segment clearing>
-      <Form onSubmit={handleSubmit}>
-        <Form.Field>
-          <label>Title</label>
-          <input
-            placeholder="Title"
-            name="title"
-            onChange={handleInputChange}
-            value={activity.title}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Description</label>
-          <TextArea
-            placeholder="Description"
-            name="description"
-            onChange={handleInputChange}
-            value={activity.description}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Date</label>
-          <Input
-            placeholder="Date"
-            type="datetime-local"
-            name="date"
-            onChange={handleInputChange}
-            value={activity.date}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>City</label>
-          <Input
-            placeholder="City"
-            name="city"
-            onChange={handleInputChange}
-            value={activity.city}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Venue</label>
-          <Input
-            placeholder="Venue"
-            name="venue"
-            onChange={handleInputChange}
-            value={activity.venue}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Category</label>
-          <Input
-            placeholder="Category"
-            name="category"
-            onChange={handleInputChange}
-            value={activity.category}
-          />
-        </Form.Field>
-        <Button
-          floated="right"
-          positive
-          content="Submit"
-          type="submit"
-          loading={submitting}
-        ></Button>
-        <Button
-          onClick={() => history.push("/activities")}
-          content="Cancel"
-          floated="right"
-          type="Button"
-        />
-      </Form>
-    </Segment>
+    <Grid>
+      <Grid.Column width={10}>
+        <Segment clearing>
+          <Form onSubmit={handleSubmit}>
+            <Form.Field>
+              <label>Title</label>
+              <input
+                placeholder="Title"
+                name="title"
+                onChange={handleInputChange}
+                value={activity.title}
+              />
+            </Form.Field>
+            <Form.Field>
+              <label>Description</label>
+              <TextArea
+                placeholder="Description"
+                name="description"
+                onChange={handleInputChange}
+                value={activity.description}
+              />
+            </Form.Field>
+            <Form.Field>
+              <label>Date</label>
+              <Input
+                placeholder="Date"
+                type="datetime-local"
+                name="date"
+                onChange={handleInputChange}
+                value={activity.date}
+              />
+            </Form.Field>
+            <Form.Field>
+              <label>City</label>
+              <Input
+                placeholder="City"
+                name="city"
+                onChange={handleInputChange}
+                value={activity.city}
+              />
+            </Form.Field>
+            <Form.Field>
+              <label>Venue</label>
+              <Input
+                placeholder="Venue"
+                name="venue"
+                onChange={handleInputChange}
+                value={activity.venue}
+              />
+            </Form.Field>
+            <Form.Field>
+              <label>Category</label>
+              <Input
+                placeholder="Category"
+                name="category"
+                onChange={handleInputChange}
+                value={activity.category}
+              />
+            </Form.Field>
+            <Button
+              floated="right"
+              positive
+              content="Submit"
+              type="submit"
+              loading={submitting}
+            ></Button>
+            <Button
+              onClick={() => history.push("/activities")}
+              content="Cancel"
+              floated="right"
+              type="Button"
+            />
+          </Form>
+        </Segment>
+      </Grid.Column>
+    </Grid>
   );
 };
 
