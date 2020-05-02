@@ -16,6 +16,8 @@ using Microsoft.EntityFrameworkCore.SqlServer;
 using Application;
 using MediatR;
 using Application.Activities;
+using FluentValidation.AspNetCore;
+using Api.Middleware;
 
 namespace Api
 {
@@ -40,11 +42,13 @@ namespace Api
             {
                 opt.AddPolicy("AllowClient", policy =>
                  {
-                     policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000","https://localhost:3000");
+                     policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:3000");
                  }
                 );
             }
             );
+            services.AddControllers().AddFluentValidation(c=>
+            c.RegisterValidatorsFromAssemblyContaining<Application.Activities.Create>());
             services.AddTransient<IUserService, UserService>();
             services.AddMediatR(typeof(List.Handler).Assembly);
             services.AddControllers();
@@ -53,9 +57,10 @@ namespace Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+//                app.UseDeveloperExceptionPage();
             }
 
             app.UseHttpsRedirection();
