@@ -2,7 +2,6 @@ import React from "react";
 import {
   Item,
   Button,
-  Label,
   SegmentGroup,
   Segment,
   Icon,
@@ -10,24 +9,29 @@ import {
 import { IActivity } from "../../../app/models/Activity";
 import { NavLink } from "react-router-dom";
 import { observer } from "mobx-react-lite";
+import { format } from "date-fns";
 
 const ActivityListItem: React.FC<{ activity: IActivity }> = ({ activity }) => {
   return (
     <SegmentGroup>
       <Segment>
         <Item.Group>
-        <Item>
-          <Item.Image size="tiny" circular src="/assets/user.png"></Item.Image>
-          <Item.Content>
-            <Item.Header as="a">{activity.title}</Item.Header>
-            <Item.Description>Hosted by Nishank</Item.Description>            
-          </Item.Content>
+          <Item>
+            <Item.Image
+              size="tiny"
+              circular
+              src="/assets/user.png"
+            ></Item.Image>
+            <Item.Content>
+              <Item.Header as="a">{activity.title}</Item.Header>
+              <Item.Description>Hosted by Nishank</Item.Description>
+            </Item.Content>
           </Item>
         </Item.Group>
       </Segment>
       <Segment>
-        <Icon name="clock"></Icon>
-        {activity.date}
+        <Icon name="clock" />
+        {format(activity.date, "h:mm a")}
         <Icon name="marker"></Icon>
         {activity.venue}, {activity.city}
       </Segment>

@@ -5,7 +5,7 @@ import agent from "../api/agent";
 
 configure({ enforceActions: "always" });
 class ActivityStore {
-  @observable activityRegistry = observable.map();
+  @observable activityRegistry = new Map();
   @observable loadingInitial: boolean = false;
   @observable activity: IActivity | null = null;
   @observable submitting: boolean = false;
@@ -19,12 +19,12 @@ class ActivityStore {
 
   groupActivitiesByDate = (activites: IActivity[]) => {
     const sortedActivities = activites.sort(
-      (a, b) => Date.parse(a.date) - Date.parse(b.date)
+      (a, b) => a.date.getTime() - b.date!.getTime()
     );
 
     const groupedActivities = Object.entries(
       sortedActivities.reduce((activityEntries, activity) => {
-        const date = activity.date.split("T")[0];
+        const date = activity.date.toISOString().split("T")[0];
         //console.log(activityEntries);
         activityEntries[date] = activityEntries[date]
           ? [...activityEntries[date], activity]
@@ -42,7 +42,7 @@ class ActivityStore {
       const activities = await agent.Activities.list();
       runInAction("loading activities", () => {
         activities.forEach((activity) => {
-          activity.date = activity.date.split(".")[0];
+          activity.date = new Date(activity.date);
           this.activityRegistry.set(activity.id, activity);
         });
         this.loadingInitial = false;
@@ -59,21 +59,23 @@ class ActivityStore {
     return this.activityRegistry.get(id);
   };
 
-  @action clearActivity = () => {
-    this.activity = null;
-  };
+
   @action loadActivity = async (id: string) => {
     let activity = this.getActivity(id);
     if (activity) {
       this.activity = activity;
+      return activity;
     } else {
       this.loadingInitial = true;
       try {
         activity = await agent.Activities.details(id);
         runInAction("getting activity", () => {
+          activity.date = new Date(activity.date);
+          this.activityRegistry.set(activity.id, activity);
           this.activity = activity;
           this.loadingInitial = false;
         });
+        return activity;
       } catch (error) {
         runInAction("get activity error", () => {
           this.loadingInitial = false;
