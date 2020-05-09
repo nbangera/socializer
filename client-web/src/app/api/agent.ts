@@ -2,12 +2,27 @@ import axios, { AxiosResponse } from "axios";
 import { IActivity } from "../models/Activity";
 import { history } from "../..";
 import { toast } from "react-toastify";
+import { IUser, IUserFormValues } from "../models/User";
 
 axios.defaults.baseURL = "https://localhost:5001/api";
 
+axios.interceptors.request.use(
+  (config) => {
+    const token = window.localStorage.getItem("jwt");
+    if (token) 
+    {
+      config.headers.Authorization = `Bearer ${token}`;      
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 axios.interceptors.response.use(undefined, (error) => {
-  if(error.message === 'Network Error' && !error.response){
-    toast.error('Network error detected');
+  if (error.message === "Network Error" && !error.response) {
+    toast.error("Network error detected");
   }
   const { status, config, data } = error.response;
   if (status === 404) {
@@ -16,7 +31,7 @@ axios.interceptors.response.use(undefined, (error) => {
   //for handling invalid guid
   if (
     status === 400 &&
-    config.method == "get" &&
+    config.method === "get" &&
     data.errors.hasOwnProperty("id")
   ) {
     history.push("/notfound");
@@ -24,6 +39,7 @@ axios.interceptors.response.use(undefined, (error) => {
   if (status === 500) {
     toast.error("Server error");
   }
+  throw error.response;
 });
 
 const responseBody = (response: AxiosResponse) => response.data;
@@ -57,6 +73,15 @@ const Activities = {
   delete: (id: string) => request.delete(`/activities/${id}`),
 };
 
+const User = {
+  current: (): Promise<IUser> => request.get("/user"),
+  register: (user: IUserFormValues): Promise<IUser> =>
+    request.post("/user/register", user),
+  login: (user: IUserFormValues): Promise<IUser> =>
+    request.post("/user/login", user),
+};
+
 export default {
   Activities,
+  User,
 };

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-    [AllowAnonymous]
+
     public class ActivitiesController:BaseController
     {
    
@@ -22,8 +22,7 @@ namespace Api.Controllers
 
         }
 
-        [HttpGet("{id}")]
-        [Authorize]
+        [HttpGet("{id}")]        
         public async Task<ActionResult<Activity>> Detail(Guid id)
         {
             var activity = await Mediator.Send(new Detail.Query { Id = id });

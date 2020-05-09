@@ -63,7 +63,7 @@ namespace Api
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
             {
-
+               
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false,
@@ -73,8 +73,8 @@ namespace Api
                 };
             });
 
-            services.AddControllers().AddFluentValidation(c =>
-            c.RegisterValidatorsFromAssemblyContaining<Application.Activities.Create>());
+            //services.AddControllers().AddFluentValidation(c =>
+            //c.RegisterValidatorsFromAssemblyContaining<Application.Activities.Create>());
             services.AddTransient<IUserService, UserService>();
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
@@ -83,7 +83,8 @@ namespace Api
                 var policy  = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                 opt.Filters.Add(new AuthorizeFilter(policy));
 
-            });            
+            }).AddFluentValidation(c =>
+            c.RegisterValidatorsFromAssemblyContaining<Application.Activities.Create>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

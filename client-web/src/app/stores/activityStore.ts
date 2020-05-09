@@ -1,10 +1,16 @@
-import { observable, action, computed, configure, runInAction } from "mobx";
+import { observable, action, computed, runInAction } from "mobx";
 import { IActivity } from "../models/Activity";
-import { createContext, SyntheticEvent } from "react";
+import { SyntheticEvent } from "react";
 import agent from "../api/agent";
+import { RootStore } from "./rootStore";
 
-configure({ enforceActions: "always" });
-class ActivityStore {
+
+export default class ActivityStore {
+  rootStore: RootStore;
+  constructor(rootStore: RootStore) {
+    this.rootStore = rootStore;
+  }
+
   @observable activityRegistry = new Map();
   @observable loadingInitial: boolean = false;
   @observable activity: IActivity | null = null;
@@ -58,7 +64,6 @@ class ActivityStore {
   getActivity = (id: string) => {
     return this.activityRegistry.get(id);
   };
-
 
   @action loadActivity = async (id: string) => {
     let activity = this.getActivity(id);
@@ -141,5 +146,3 @@ class ActivityStore {
     }
   };
 }
-
-export default createContext(new ActivityStore());

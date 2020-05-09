@@ -24,7 +24,7 @@ namespace Infrastructure.Security
            };
 
             // generate signing credentials
-            var creds = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Test key for this demo")), SecurityAlgorithms.HmacSha512Signature);
+            var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
