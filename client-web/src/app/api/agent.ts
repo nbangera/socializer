@@ -61,7 +61,7 @@ const request = {
   put: (url: string, body: {}) =>
     axios.put(url, body).then(sleep(1000)).then(responseBody),
   delete: (url: string) =>
-    axios.delete(url).then(sleep(1000)).then(responseBody),
+    axios.delete(url).then(sleep(1000)).then(responseBody),    
 };
 
 const Activities = {
@@ -71,6 +71,8 @@ const Activities = {
   update: (activity: IActivity) =>
     request.put(`/activities/${activity.id}`, activity),
   delete: (id: string) => request.delete(`/activities/${id}`),
+  attend:(id:string) =>request.post(`/activities/${id}/attend`,{}),
+  unattend:(id:string) =>request.delete(`/activities/${id}/unattend`), 
 };
 
 const User = {

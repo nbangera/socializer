@@ -1,9 +1,10 @@
-import { observable, computed, action, runInAction } from "mobx";
+import { observable, computed, action, runInAction, configure } from "mobx";
 import { IUser, IUserFormValues } from "../models/User";
 import agent from "../api/agent";
 import { RootStore } from "./rootStore";
 import { history } from "../..";
 
+configure({ enforceActions: "always" });
 export default class UserStore {
   rootStore: RootStore;
   constructor(rootStore: RootStore) {
@@ -18,8 +19,8 @@ export default class UserStore {
 
   @action getUser = async () => {
     try {
-      const user = await agent.User.current();
-      runInAction("get current user", () => {
+      const user = await agent.User.current();      
+      runInAction("get current user", () => {        
         this.user = user;
       });
     } catch (error) {
@@ -29,10 +30,10 @@ export default class UserStore {
 
   @action login = async (values: IUserFormValues) => {
     try {
-      const user = await agent.User.login(values);
+      const user = await agent.User.login(values);      
       runInAction("login", () => {
         this.rootStore.commonStore.setToken(user.token);
-        //this.user = user;
+        this.user = user;
       });    
     } catch (error) {
       //console.log(error);
@@ -45,7 +46,7 @@ export default class UserStore {
       const user = await agent.User.register(values);
       runInAction("register", () => {
         this.rootStore.commonStore.setToken(user.token);
-        //this.user = user;
+        this.user = user;
       });    
     } catch (error) {
       //console.log(error);

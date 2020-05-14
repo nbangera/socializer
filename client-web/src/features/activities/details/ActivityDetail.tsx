@@ -3,8 +3,8 @@ import { Grid } from "semantic-ui-react";
 import { RouteComponentProps } from "react-router-dom";
 import { LoadingComponent } from "../../../app/layout/LoadingComponent";
 import { observer } from "mobx-react-lite";
-import  ActivityDetailHeader  from "./ActivityDetailHeader";
-import  ActivityDetailInfo from "./ActivityDetailInfo";
+import ActivityDetailHeader from "./ActivityDetailHeader";
+import ActivityDetailInfo from "./ActivityDetailInfo";
 import ActivityDetailChat from "./ActivityDetailChat";
 import ActivityDetailSidebar from "./ActivityDetailSidebar";
 import { RootStoreContext } from "../../../app/stores/rootStore";
@@ -29,8 +29,7 @@ const ActivityDetail: React.FC<RouteComponentProps<DetailParams>> = ({
       <LoadingComponent content="loading activity detail"></LoadingComponent>
     );
 
-    if(!activity) return <h2>Activity not found</h2>;
-
+  if (!activity) return <h2>Activity not found</h2>
 
   return (
     <Grid>
@@ -40,40 +39,9 @@ const ActivityDetail: React.FC<RouteComponentProps<DetailParams>> = ({
         <ActivityDetailChat />
       </Grid.Column>
       <Grid.Column width={6}>
-        <ActivityDetailSidebar />
+        <ActivityDetailSidebar attendees={activity.attendees} />
       </Grid.Column>
     </Grid>
-    // <Card fluid>
-    //   <Image
-    //     src={`/assets/categoryimages/${activity!.category}.jpg`}
-    //     wrapped
-    //     ui={false}
-    //   />
-    //   <Card.Content>
-    //     <Card.Header>{activity!.title}</Card.Header>
-    //     <Card.Meta>
-    //       <span className="date">{activity!.date}</span>
-    //     </Card.Meta>
-    //     <Card.Description>{activity!.description}</Card.Description>
-    //   </Card.Content>
-    //   <Card.Content extra>
-    //     <Button.Group width={2}>
-    //       <Button
-    //         as={NavLink}
-    //         to={`/edit/${activity!.id}`}
-    //         basic
-    //         color="blue"
-    //         content="Edit"
-    //       ></Button>
-    //       <Button
-    //         basic
-    //         onClick={() => history.push("/activities")}
-    //         color="grey"
-    //         content="Cancel"
-    //       ></Button>
-    //     </Button.Group>
-    //   </Card.Content>
-    // </Card>
   );
 };
 

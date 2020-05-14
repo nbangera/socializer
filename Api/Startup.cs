@@ -27,6 +27,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using AutoMapper;
+using Infrastructure.Photos;
 
 namespace Api
 {
@@ -44,6 +46,7 @@ namespace Api
         {
             services.AddDbContext<DataContext>(conn =>
             {
+                conn.UseLazyLoadingProxies();
                 conn.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
                 //conn.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
@@ -56,10 +59,26 @@ namespace Api
                 );
             }
             );
+         
             var builder = services.AddIdentityCore<AppUser>();
             var identityBuilder = new IdentityBuilder(builder.UserType, builder.Services);
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
+            
+            services.AddMediatR(typeof(List.Handler).Assembly);
+            services.AddAutoMapper(typeof(List.Handler).Assembly);
+            services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
+
+            services.AddAuthorization(opt => 
+            {
+                opt.AddPolicy("IsActivityHost", policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
+
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
             {
@@ -73,18 +92,18 @@ namespace Api
                 };
             });
 
-            //services.AddControllers().AddFluentValidation(c =>
-            //c.RegisterValidatorsFromAssemblyContaining<Application.Activities.Create>());
-            services.AddTransient<IUserService, UserService>();
-            services.AddScoped<IJwtGenerator, JwtGenerator>();
-            services.AddScoped<IUserAccessor, UserAccessor>();
-            services.AddMediatR(typeof(List.Handler).Assembly);
+                        
             services.AddControllers(opt=>{
                 var policy  = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                 opt.Filters.Add(new AuthorizeFilter(policy));
 
             }).AddFluentValidation(c =>
             c.RegisterValidatorsFromAssemblyContaining<Application.Activities.Create>());
+
+            services.AddTransient<IUserService, UserService>();
+            services.AddScoped<IJwtGenerator, JwtGenerator>();
+            services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

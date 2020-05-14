@@ -20,7 +20,7 @@ const HomePage:React.FC<RouteComponentProps> = ({history}) => {
             alt="logo"
             style={{ marginBottom: 12 }}
           />
-          Reactivities
+          Platform to Socialize
         </Header>
         {isLoggedIn && user ? (
           <Fragment>
