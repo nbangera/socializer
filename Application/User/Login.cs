@@ -4,6 +4,7 @@ using Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ namespace Application.User
                     return new User{
                         DisplayName = user.DisplayName,
                         UserName = user.UserName,
-                        Image = null,
+                        Image = user.Photos.SingleOrDefault(x=>x.IsMain)?.Url,
                         Token = _jwtGenerator.CreateToken(user)
                     };
                 }
