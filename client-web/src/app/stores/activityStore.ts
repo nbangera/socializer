@@ -5,6 +5,11 @@ import agent from "../api/agent";
 import { RootStore } from "./rootStore";
 import { setActivityProps, createAttendee } from "../common/util/util";
 import { toast } from "react-toastify";
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel,
+} from "@microsoft/signalr";
 
 export default class ActivityStore {
   rootStore: RootStore;
@@ -18,6 +23,47 @@ export default class ActivityStore {
   @observable submitting: boolean = false;
   @observable loading: boolean = false;
   @observable target = "";
+  @observable.ref hubConnection: HubConnection | null = null;
+
+  @action createHubConnection = (activityId: string) => {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:5001/chat", {
+        accessTokenFactory: () => this.rootStore.commonStore.token!,
+      })
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    this.hubConnection
+      .start()
+      .then(() => console.log(this.hubConnection?.state))
+      .then(() => this.hubConnection!.invoke("AddToGroup", this.activity!.id))
+      .catch((error) => console.log("Error establishing connection", error));
+
+    this.hubConnection.on("ReceiveComment", (comment) => {
+      runInAction("OnReceiveComment", () => {
+        this.activity!.comments.push(comment);
+      });
+    });
+
+    this.hubConnection.on("Send", (message) => {
+      toast.info(message);
+    });
+  };
+
+  @action stopConnection = () => {
+    this.hubConnection!.invoke("RemoveFromGroup", this.activity!.id)
+      .then(() => this.hubConnection!.stop()).then(()=>console.log("connection stopped"))
+      .catch((error) => console.log(console.error()));
+  };
+
+  @action addComment = async (values: any) => {
+    values.activityId = this.activity!.id;
+    try {
+      await this.hubConnection!.invoke("SendComment", values);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   @computed get activitiesByDate() {
     return this.groupActivitiesByDate(
@@ -48,6 +94,7 @@ export default class ActivityStore {
     this.loadingInitial = true;
     try {
       const activities = await agent.Activities.list();
+      debugger;
       runInAction("loading activities", () => {
         activities.forEach((activity) => {
           setActivityProps(activity, this.rootStore.userStore.user!);
@@ -68,6 +115,7 @@ export default class ActivityStore {
   };
 
   @action loadActivity = async (id: string) => {
+    debugger;
     let activity = this.getActivity(id);
     if (activity) {
       this.activity = activity;
@@ -96,10 +144,11 @@ export default class ActivityStore {
     try {
       this.submitting = true;
       await agent.Activities.create(activity);
-      const attendee = createAttendee(this.rootStore.userStore.user!)
-      let attendees : IAttendee [] = []
+      const attendee = createAttendee(this.rootStore.userStore.user!);
+      let attendees: IAttendee[] = [];
       attendees.push(attendee);
       activity.attendees = attendees;
+      activity.comments = [];
       activity.isHost = true;
       runInAction("create Activity", () => {
         this.activityRegistry.set(activity.id, activity);
@@ -176,7 +225,7 @@ export default class ActivityStore {
 
   @action cancelActivity = async () => {
     this.loading = true;
-    try {      
+    try {
       await agent.Activities.unattend(this.activity!.id);
       runInAction("cancel activity", () => {
         if (this.activity) {

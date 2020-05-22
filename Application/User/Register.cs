@@ -67,12 +67,14 @@ namespace Application.User
 
                 if (result.Succeeded)
                 {
+                    var image = user.Photos?.SingleOrDefault(x=>x.IsMain)?.Url;
+                    var token = _jwtGenerator.CreateToken(user);
                     return new User
                     {
                         DisplayName = user.DisplayName,
-                        Token = _jwtGenerator.CreateToken(user),
+                        Token = token,
                         UserName = user.UserName,
-                        Image = user.Photos.SingleOrDefault(x=>x.IsMain)?.Url
+                        Image = image
                     };
                 }
 
