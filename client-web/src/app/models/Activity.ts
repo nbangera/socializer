@@ -12,6 +12,11 @@ export interface IActivity {
   comments : IComment[];
 }
 
+export interface IActivitiesEnvelope{
+  activities : IActivity[];
+  activityCount : number;
+}
+
 export interface IComment {
   id : string;
   body : string;

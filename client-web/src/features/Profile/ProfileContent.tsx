@@ -4,13 +4,14 @@ import { IProfile } from "../../app/models/Profile";
 import { observer } from "mobx-react-lite";
 import  ProfilePhoto from "./ProfilePhoto";
 import ProfileDescription from "./ProfileDescription";
+import ProfileActivities from "./ProfileActivities";
 
 const panes = [
   { menuItem: "About", render: () => <Tab.Pane><ProfileDescription></ProfileDescription></Tab.Pane> },
   { menuItem: "Photos", render: () => <Tab.Pane><ProfilePhoto></ProfilePhoto> </Tab.Pane> },
   {
     menuItem: "Activities",
-    render: () => <Tab.Pane>Activities content</Tab.Pane>,
+    render: () => <Tab.Pane><ProfileActivities/></Tab.Pane>,
   },
   {
     menuItem: "Followers",

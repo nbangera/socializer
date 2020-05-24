@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { IActivity } from "../models/Activity";
+import { IActivity, IActivitiesEnvelope } from "../models/Activity";
 import { history } from "../..";
 import { toast } from "react-toastify";
 import { IUser, IUserFormValues } from "../models/User";
@@ -57,6 +57,7 @@ const sleep = (ms: number) => (response: AxiosResponse) =>
 
 const request = {
   get: (url: string) => axios.get(url).then(sleep(1000)).then(responseBody),
+  getByParams: (url:string,params:URLSearchParams) => axios.get(url,{params:params}).then(sleep(1000)).then(responseBody),
   post: (url: string, body: {}) =>
     axios.post(url, body).then(sleep(1000)).then(responseBody),
   put: (url: string, body: {}) =>
@@ -71,7 +72,10 @@ const request = {
 };
 
 const Activities = {
-  list: (): Promise<IActivity[]> => request.get("/activities/"),
+  // list: (limit?:number,page?:number): Promise<IActivitiesEnvelope> => 
+  // request.get(`/activities?limit=${limit}&offset=${page?page*limit!:0}`),
+  list: (params:URLSearchParams): Promise<IActivitiesEnvelope> => 
+  request.getByParams(`/activities`,params),
   details: (id: string) => request.get(`/activities/${id}`),
   create: (activity: IActivity) => request.post("/activities/", activity),
   update: (activity: IActivity) =>
@@ -94,7 +98,8 @@ const Profiles = {
   uploadPhoto :(photo:Blob):Promise<IPhoto>=>request.postForm(`/photos`,photo),
   setMainPhoto :(id:string)=>request.post(`/photos/${id}/setMain`,{}),
   deletePhoto:(id:string)=>request.delete(`/photos/${id}`),
-  updateProfile:(profile:Partial<IProfile>)=>request.put('/profiles',profile)
+  updateProfile:(profile:Partial<IProfile>)=>request.put('/profiles',profile),
+  listUserActivities:(userName:string,predicate:string)=>request.get(`/profiles/${userName}/activities?predicate=${predicate})`)
 };
 
 export default {
