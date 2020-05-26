@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Form as FinalForm, Field } from "react-final-form";
-import { Form, Button,Header } from "semantic-ui-react";
+import { Form, Button,Header, Divider } from "semantic-ui-react";
 import TextInput from "../../app/common/form/TextInput";
 import { RootStoreContext } from "../../app/stores/rootStore";
 import { IUserFormValues } from "../../app/models/User";
@@ -8,10 +8,12 @@ import { FORM_ERROR } from "final-form";
 import { combineValidators, isRequired } from "revalidate";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { ErrorMessage } from "../../app/common/form/ErrorMessage";
+import SocialLogin from './SocialLogin'
+import { observer } from "mobx-react-lite";
 
 const LoginForm: React.FC<RouteComponentProps> = ({ history }) => {
   const rootStore = useContext(RootStoreContext);
-  const { login } = rootStore.userStore;
+  const { login,fbLogin } = rootStore.userStore;
   const { closeModal } = rootStore.modalStore;
 
   const validate = combineValidators({
@@ -74,10 +76,12 @@ const LoginForm: React.FC<RouteComponentProps> = ({ history }) => {
             color={"teal"}
           ></Button>
           {/* <pre>{JSON.stringify(form.getState(), null, 2)}</pre> */}
+          <Divider horizontal>Or</Divider>
+          <SocialLogin fbCallback={fbLogin}></SocialLogin>
         </Form>
       )}
     ></FinalForm>
   );
 };
 
-export default withRouter(LoginForm);
+export default withRouter(observer(LoginForm));

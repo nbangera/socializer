@@ -55,7 +55,9 @@ namespace Api
             {
                 opt.AddPolicy("AllowClient", policy =>
                  {
-                     policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:3000").AllowCredentials();
+                     policy.AllowAnyHeader().AllowAnyMethod()
+                     .WithExposedHeaders("WWW-Authenticate")
+                     .WithOrigins("https://localhost:3000").AllowCredentials();
                  }
                 );
             }
@@ -91,7 +93,9 @@ namespace Api
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = key
+                    IssuerSigningKey = key,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
                 opt.Events = new JwtBearerEvents
                 {
@@ -132,7 +136,24 @@ namespace Api
                 //                app.UseDeveloperExceptionPage();
             }
 
+            app.UseXContentTypeOptions();
+            app.UseReferrerPolicy(opt => opt.NoReferrer());
+            app.UseXXssProtection(opt => opt.EnabledWithBlockMode());
+            app.UseXfo(opt => opt.Deny());
+            app.UseCsp(opt => opt
+                    .BlockAllMixedContent()
+                    .StyleSources(s => s.Self()
+                        .CustomSources("https://fonts.googleapis.com","sha256-F4GpCPyRepgP5znjMD8sc7PEjzet5Eef4r09dEGPpTs="))
+                    .FontSources(s => s.Self().CustomSources("https://fonts.gstatic.com", "data:"))
+                    .FormActions(s => s.Self())
+                    .FrameAncestors(s => s.Self())
+                    .ImageSources(s => s.Self().CustomSources("https://res.cloudinary.com", "blob:", "data:"))
+                    .ScriptSources(s => s.Self().CustomSources("sha256-5As4+3YpY62+l38PsxCEkjB1R4YtyktBtRScTJ3fyLU=","sha256-K0KyRwRkRPOoAENlOe2uphVAiOUfpaNfzUKIQ+w3EN8="))
+                );
+
             app.UseHttpsRedirection();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             app.UseRouting();
             app.UseCors("AllowClient");
@@ -142,6 +163,7 @@ namespace Api
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/chat");
+                endpoints.MapFallbackToController("Index","Fallback");
             });
         }
     }

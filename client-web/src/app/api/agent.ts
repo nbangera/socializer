@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { IUser, IUserFormValues } from "../models/User";
 import { IProfile, IPhoto } from "../models/Profile";
 
-axios.defaults.baseURL = "https://localhost:5001/api";
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 axios.interceptors.request.use(
   (config) => {
@@ -25,9 +25,14 @@ axios.interceptors.response.use(undefined, (error) => {
   if (error.message === "Network Error" && !error.response) {
     toast.error("Network error detected");
   }
-  const { status, config, data } = error.response;
+  const { status, config, data,headers } = error.response;
   if (status === 404) {
     history.push("/notfound");
+  }
+  if (status === 401 && headers['www-authenticate'] === 'Bearer error="invalid_token", error_description="The token is expired"') {
+    window.localStorage.removeItem('jwt');
+    history.push('/')
+    toast.info('Your session has expired, please login again')
   }
   //for handling invalid guid
   if (
@@ -56,14 +61,14 @@ const sleep = (ms: number) => (response: AxiosResponse) =>
 // const post = (url: string,body:{}) => axios.post(url,post).then(sleep(1000)).then(responseBody);
 
 const request = {
-  get: (url: string) => axios.get(url).then(sleep(1000)).then(responseBody),
-  getByParams: (url:string,params:URLSearchParams) => axios.get(url,{params:params}).then(sleep(1000)).then(responseBody),
+  get: (url: string) => axios.get(url).then(responseBody),
+  getByParams: (url:string,params:URLSearchParams) => axios.get(url,{params:params}).then(responseBody),
   post: (url: string, body: {}) =>
-    axios.post(url, body).then(sleep(1000)).then(responseBody),
+    axios.post(url, body).then(responseBody),
   put: (url: string, body: {}) =>
-    axios.put(url, body).then(sleep(1000)).then(responseBody),
+    axios.put(url, body).then(responseBody),
   delete: (url: string) =>
-    axios.delete(url).then(sleep(1000)).then(responseBody),
+    axios.delete(url).then(responseBody),
   postForm:(url:string,file:Blob) => {
     let formData =  new FormData();
     formData.append('File',file);
@@ -91,6 +96,7 @@ const User = {
     request.post("/user/register", user),
   login: (user: IUserFormValues): Promise<IUser> =>
     request.post("/user/login", user),
+    fbLogin:(accessToken:string)=>request.post('/user/facebook',{request})
 };
 
 const Profiles = {
