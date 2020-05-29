@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using AutoMapper;
 using Infrastructure.Photos;
 using Api.Chat;
+using System.Net.Http.Headers;
 
 namespace Api
 {
@@ -73,6 +74,7 @@ namespace Api
             services.AddSignalR();
 
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
+            services.Configure<FacebookAppSettings>(Configuration.GetSection("Authentication:Facebook"));
 
             services.AddAuthorization(opt =>
             {
@@ -125,6 +127,12 @@ namespace Api
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             services.AddScoped<IUserAccessor, UserAccessor>();
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            services.AddScoped<IFacebookAccessor,FacebookAccessor>();
+
+            services.AddHttpClient("facebook", c =>{
+                c.BaseAddress = new Uri("https://graph.facebook.com/");    
+                c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));               
+           });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -143,12 +151,12 @@ namespace Api
             app.UseCsp(opt => opt
                     .BlockAllMixedContent()
                     .StyleSources(s => s.Self()
-                        .CustomSources("https://fonts.googleapis.com","sha256-F4GpCPyRepgP5znjMD8sc7PEjzet5Eef4r09dEGPpTs="))
+                        .CustomSources("https://fonts.googleapis.com", "sha256-F4GpCPyRepgP5znjMD8sc7PEjzet5Eef4r09dEGPpTs="))
                     .FontSources(s => s.Self().CustomSources("https://fonts.gstatic.com", "data:"))
                     .FormActions(s => s.Self())
                     .FrameAncestors(s => s.Self())
                     .ImageSources(s => s.Self().CustomSources("https://res.cloudinary.com", "blob:", "data:"))
-                    .ScriptSources(s => s.Self().CustomSources("sha256-5As4+3YpY62+l38PsxCEkjB1R4YtyktBtRScTJ3fyLU=","sha256-K0KyRwRkRPOoAENlOe2uphVAiOUfpaNfzUKIQ+w3EN8="))
+                    .ScriptSources(s => s.Self().CustomSources("sha256-5As4+3YpY62+l38PsxCEkjB1R4YtyktBtRScTJ3fyLU=", "sha256-K0KyRwRkRPOoAENlOe2uphVAiOUfpaNfzUKIQ+w3EN8="))
                 );
 
             app.UseHttpsRedirection();
@@ -163,7 +171,7 @@ namespace Api
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/chat");
-                endpoints.MapFallbackToController("Index","Fallback");
+                endpoints.MapFallbackToController("Index", "Fallback");
             });
         }
     }

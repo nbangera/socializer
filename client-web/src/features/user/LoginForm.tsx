@@ -13,7 +13,7 @@ import { observer } from "mobx-react-lite";
 
 const LoginForm: React.FC<RouteComponentProps> = ({ history }) => {
   const rootStore = useContext(RootStoreContext);
-  const { login,fbLogin } = rootStore.userStore;
+  const { login,fbLogin,loading } = rootStore.userStore;
   const { closeModal } = rootStore.modalStore;
 
   const validate = combineValidators({
@@ -77,7 +77,7 @@ const LoginForm: React.FC<RouteComponentProps> = ({ history }) => {
           ></Button>
           {/* <pre>{JSON.stringify(form.getState(), null, 2)}</pre> */}
           <Divider horizontal>Or</Divider>
-          <SocialLogin fbCallback={fbLogin}></SocialLogin>
+          <SocialLogin fbCallback={fbLogin}  loading={loading}></SocialLogin>
         </Form>
       )}
     ></FinalForm>

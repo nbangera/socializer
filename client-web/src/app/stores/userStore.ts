@@ -12,6 +12,7 @@ export default class UserStore {
   }
 
   @observable user: IUser | null = null;
+  @observable loading :boolean = false;
 
   @computed get isLoggedIn() {
     return !!this.user;
@@ -19,8 +20,8 @@ export default class UserStore {
 
   @action getUser = async () => {
     try {
-      const user = await agent.User.current();      
-      runInAction("get current user", () => {        
+      const user = await agent.User.current();
+      runInAction("get current user", () => {
         this.user = user;
       });
     } catch (error) {
@@ -30,11 +31,11 @@ export default class UserStore {
 
   @action login = async (values: IUserFormValues) => {
     try {
-      const user = await agent.User.login(values);      
+      const user = await agent.User.login(values);
       runInAction("login", () => {
         this.rootStore.commonStore.setToken(user.token);
         this.user = user;
-      });    
+      });
     } catch (error) {
       //console.log(error);
       throw error;
@@ -47,7 +48,7 @@ export default class UserStore {
       runInAction("register", () => {
         this.rootStore.commonStore.setToken(user.token);
         this.user = user;
-      });    
+      });
     } catch (error) {
       //console.log(error);
       throw error;
@@ -60,8 +61,20 @@ export default class UserStore {
     history.push("/");
   };
 
-  @action fbLogin = async(response:any)=>
-  {
-    console.log(response);
-  }
+  @action fbLogin = async (response: any) => {
+    this.loading = true;
+    try {
+      var user = await agent.User.fbLogin(response.accessToken);
+      runInAction("fbLogin", () => {
+        this.user = user;
+        this.rootStore.commonStore.setToken(user.token);
+        this.rootStore.modalStore.closeModal();
+        history.push("/activities");
+        this.loading= false;
+      });
+    } catch (error) {
+      this.loading= false;
+      throw error;
+    }    
+  };
 }
