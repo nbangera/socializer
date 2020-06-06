@@ -96,7 +96,7 @@ const User = {
     request.post("/user/register", user),
   login: (user: IUserFormValues): Promise<IUser> =>
     request.post("/user/login", user),
-    fbLogin:(accessToken:string)=>request.post('/user/facebook',{request})
+    fbLogin:(accessToken:string)=>request.post('/user/facebook',{accessToken})
 };
 
 const Profiles = {
@@ -105,6 +105,9 @@ const Profiles = {
   setMainPhoto :(id:string)=>request.post(`/photos/${id}/setMain`,{}),
   deletePhoto:(id:string)=>request.delete(`/photos/${id}`),
   updateProfile:(profile:Partial<IProfile>)=>request.put('/profiles',profile),
+  follow:(userName:string)=>request.post(`/profiles/${userName}/follow`,{}),
+  unfollow:(userName:string)=>request.delete(`/profiles/${userName}/follow`),
+  listFollowings:(userName:string,predicate:string)=>request.get(`/profiles/${userName}/follow?predicate=${predicate}`),
   listUserActivities:(userName:string,predicate:string)=>request.get(`/profiles/${userName}/activities?predicate=${predicate})`)
 };
 

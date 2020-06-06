@@ -31,6 +31,7 @@ using AutoMapper;
 using Infrastructure.Photos;
 using Api.Chat;
 using System.Net.Http.Headers;
+using Application.Profiles;
 
 namespace Api
 {
@@ -128,6 +129,7 @@ namespace Api
             services.AddScoped<IUserAccessor, UserAccessor>();
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
             services.AddScoped<IFacebookAccessor,FacebookAccessor>();
+            services.AddScoped<IProfileReader,ProfileReader>();
 
             services.AddHttpClient("facebook", c =>{
                 c.BaseAddress = new Uri("https://graph.facebook.com/");    

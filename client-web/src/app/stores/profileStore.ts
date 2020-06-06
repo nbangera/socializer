@@ -1,22 +1,37 @@
 import { RootStore } from "./rootStore";
-import { configure, action, observable, runInAction, computed } from "mobx";
+import { action, observable, runInAction, computed, reaction } from "mobx";
 import agent from "../api/agent";
 import { IProfile, IPhoto, IUserActivity } from "../models/Profile";
 import { toast } from "react-toastify";
 
-configure({ enforceActions: "always" });
+//configure({ enforceActions: "always" });
 export default class ProfileStore {
   rootStore: RootStore;
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+
+    reaction(
+      () => this.activeTab,
+      (activeIndex) => {
+        this.tabChanged(activeIndex);
+        // if (activeIndex === 3 || activeIndex === 4) {
+        //   const predicate = activeIndex === 3 ? "followers" : "following";
+        //   this.loadFollowings(predicate);
+        // } else {
+        //   this.followings = [];
+        // }
+      }
+    );
   }
 
   @observable loadingProfile = true;
   @observable profile: IProfile | null = null;
   @observable uploadingPhoto = false;
   @observable loading = false;
-  @observable userActivities : IUserActivity[] = []
-  @observable loadingUserActivities : boolean = false;
+  @observable userActivities: IUserActivity[] = [];
+  @observable loadingUserActivities: boolean = false;
+  @observable followings: IProfile[] = [];
+  @observable activeTab: number = 0;
 
   @computed get isCurrentUser() {
     if (this.rootStore.userStore.user && this.profile) {
@@ -25,6 +40,17 @@ export default class ProfileStore {
       return false;
     }
   }
+
+  @action tabChanged= (activeIndex:number)=>{
+    if (activeIndex === 3 || activeIndex === 4) {
+      const predicate = activeIndex === 3 ? "followers" : "following";
+      this.loadFollowings(predicate);
+    } else {
+      this.followings = [];
+    }
+
+  }
+
 
   @action loadProfile = async (userName: string) => {
     this.loadingProfile = true;
@@ -119,10 +145,13 @@ export default class ProfileStore {
     }
   };
 
-  @action loadUserActivities = async (userName:string,predicate?:string) => {
+  @action loadUserActivities = async (userName: string, predicate?: string) => {
     this.loadingUserActivities = true;
     try {
-      const userActivities = await agent.Profiles.listUserActivities(userName,predicate!);
+      const userActivities = await agent.Profiles.listUserActivities(
+        userName,
+        predicate!
+      );
       runInAction("loadUserActivities", () => {
         this.userActivities = userActivities;
         this.loadingUserActivities = false;
@@ -133,5 +162,62 @@ export default class ProfileStore {
         this.loadingUserActivities = false;
       });
     }
+  };
+
+  @action follow = async (userName: string) => {
+    this.loading = true;
+    try {
+      await agent.Profiles.follow(userName);
+      runInAction("follow", () => {
+        this.profile!.following = true;
+        this.profile!.followersCount++;
+        this.loading = false;
+      });
+    } catch (error) {
+      toast.error("Problem following user");
+      runInAction("follow error", () => {
+        this.loading = false;
+      });
+    }
+  };
+
+  @action unfollow = async (userName: string) => {
+    this.loading = true;
+    try {
+      await agent.Profiles.unfollow(userName);
+      runInAction("unfollow", () => {
+        this.profile!.following = false;
+        this.profile!.followersCount--;
+        this.loading = false;
+      });
+    } catch (error) {
+      toast.error("Problem unfollowing user");
+      runInAction("unfollow error", () => {
+        this.loading = false;
+      });
+    }
+  };
+
+  @action loadFollowings = async (predicate: string) => {
+    this.loading = true;
+    try {
+      const profiles = await agent.Profiles.listFollowings(
+        this.profile!.userName,
+        predicate
+      );
+      runInAction("loadfollowings", () => {
+        this.followings = profiles;
+        this.loading = false;
+      });
+    } catch (error) {
+      runInAction("loadfollowings error", () => {
+        toast.error("problem loading followings");
+        this.loading = false;
+      });
+    }
+  };
+
+  @action setActiveTab = (activeIndex: number) => {
+    this.activeTab = activeIndex;
   };
 }

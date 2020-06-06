@@ -1,43 +1,42 @@
 import React from "react";
 import { Tab } from "semantic-ui-react";
-import { IProfile } from "../../app/models/Profile";
-import { observer } from "mobx-react-lite";
-import  ProfilePhoto from "./ProfilePhoto";
+import ProfilePhoto from "./ProfilePhoto";
 import ProfileDescription from "./ProfileDescription";
 import ProfileActivities from "./ProfileActivities";
+import ProfileFollowings from "./ProfileFollowings";
 
 const panes = [
-  { menuItem: "About", render: () => <Tab.Pane><ProfileDescription></ProfileDescription></Tab.Pane> },
-  { menuItem: "Photos", render: () => <Tab.Pane><ProfilePhoto></ProfilePhoto> </Tab.Pane> },
+  {
+    menuItem: "About",
+    render: () => <ProfileDescription></ProfileDescription>,
+  },
+  { menuItem: "Photos", render: () => <ProfilePhoto></ProfilePhoto> },
   {
     menuItem: "Activities",
-    render: () => <Tab.Pane><ProfileActivities/></Tab.Pane>,
+    render: () => <ProfileActivities />,
   },
   {
     menuItem: "Followers",
-    render: () => <Tab.Pane>Followers content</Tab.Pane>,
+    render: () => <ProfileFollowings />,
   },
   {
     menuItem: "Following",
-    render: () => {
-      return <Tab.Pane>Following content</Tab.Pane>;
-    },
+    render: () => <ProfileFollowings></ProfileFollowings>,
   },
 ];
 
 interface IProps {
-
-    profile : IProfile
+  setActiveTab: (activeIndex:any)=>void
 }
 
-
-const ProfileContent:React.FC<IProps> = ({profile}) => {
+const ProfileContent: React.FC<IProps> = ({ setActiveTab }) => {
   return (
     <Tab
       menu={{ fluid: true, vertical: true }}
       menuPosition="right"
       panes={panes}
+      onTabChange={(e,data)=>setActiveTab(data.activeIndex)}
     ></Tab>
   );
 };
-export default observer(ProfileContent);
+export default ProfileContent;

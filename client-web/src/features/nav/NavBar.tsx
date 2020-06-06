@@ -14,7 +14,7 @@ const NavBar: React.FC<RouteComponentProps> = ({history}) => {
     <Menu fixed="top" inverted>
       <Container>
         <Menu.Item as={NavLink} exact to="/">
-          <img src="assets/logo.png" alt="logo" />
+          <img src="/assets/logo.png" alt="logo" style={{ marginRight: 10 }}  />
           Socializer
         </Menu.Item>
         <Menu.Item name="Activities" as={NavLink} to={"/activities"} />

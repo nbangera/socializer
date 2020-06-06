@@ -1,10 +1,10 @@
-import { observable, computed, action, runInAction, configure } from "mobx";
+import { observable, computed, action, runInAction } from "mobx";
 import { IUser, IUserFormValues } from "../models/User";
 import agent from "../api/agent";
 import { RootStore } from "./rootStore";
 import { history } from "../..";
 
-configure({ enforceActions: "always" });
+//configure({ enforceActions: "always" });
 export default class UserStore {
   rootStore: RootStore;
   constructor(rootStore: RootStore) {
@@ -12,7 +12,7 @@ export default class UserStore {
   }
 
   @observable user: IUser | null = null;
-  @observable loading :boolean = false;
+  @observable loading: boolean = false;
 
   @computed get isLoggedIn() {
     return !!this.user;
@@ -70,11 +70,11 @@ export default class UserStore {
         this.rootStore.commonStore.setToken(user.token);
         this.rootStore.modalStore.closeModal();
         history.push("/activities");
-        this.loading= false;
+        this.loading = false;
       });
     } catch (error) {
-      this.loading= false;
+      this.loading = false;
       throw error;
-    }    
+    }
   };
 }
