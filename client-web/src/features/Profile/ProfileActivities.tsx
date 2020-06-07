@@ -29,7 +29,7 @@ const ProfileEvents = () => {
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     data: TabProps
   ) => {
-    let predicate;
+    let predicate;    
     switch (data.activeIndex) {
       case 1:
         predicate = 'past';

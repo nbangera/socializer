@@ -190,7 +190,7 @@ export default class ActivityStore {
     return this.activityRegistry.get(id);
   };
 
-  @action loadActivity = async (id: string) => {
+  @action loadActivity = async (id: string) => {    
     let activity = this.getActivity(id);
     if (activity) {
       this.activity = activity;
@@ -216,10 +216,11 @@ export default class ActivityStore {
   };
 
   @action createActivity = async (activity: IActivity) => {
-    try {
+    try {      
       this.submitting = true;
       await agent.Activities.create(activity);
       const attendee = createAttendee(this.rootStore.userStore.user!);
+      attendee.isHost = true;
       let attendees: IAttendee[] = [];
       attendees.push(attendee);
       activity.attendees = attendees;
