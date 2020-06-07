@@ -34,6 +34,7 @@ namespace Application.User
                     DisplayName = user.DisplayName,
                     UserName = user.UserName,
                     Token = _jwtGenerator.CreateToken(user),
+                    RefreshToken = user.RefreshToken,
                     Image = user.Photos.SingleOrDefault(x=>x.IsMain)?.Url
                 };
             }

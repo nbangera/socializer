@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -45,7 +46,9 @@ namespace Application.User
                         DisplayName = facebookInfo.Name,
                         Email = facebookInfo.Email,
                         UserName = "fb_" + facebookInfo.Id,
-                        Id = facebookInfo.Id
+                        Id = facebookInfo.Id,
+                        RefreshToken = _jwtGenerator.GenerateRefreshToken(),
+                        RefreshTokenExpiry = DateTime.Now.AddDays(30)
                     };
 
                     var photo = new Photo
@@ -66,6 +69,7 @@ namespace Application.User
                     UserName = user.UserName,
                     DisplayName = user.DisplayName,
                     Token = _jwtGenerator.CreateToken(user),
+                    RefreshToken = user.RefreshToken,
                     Image = user.Photos.FirstOrDefault(x => x.IsMain)?.Url
                 };
 

@@ -1,4 +1,11 @@
-import { observable, action, computed, runInAction, reaction, toJS } from "mobx";
+import {
+  observable,
+  action,
+  computed,
+  runInAction,
+  reaction,
+  toJS,
+} from "mobx";
 import { IActivity, IAttendee } from "../models/Activity";
 import { SyntheticEvent } from "react";
 import agent from "../api/agent";
@@ -10,6 +17,7 @@ import {
   HubConnectionBuilder,
   LogLevel,
 } from "@microsoft/signalr";
+import jwt from "jsonwebtoken";
 
 const LIMIT = 2;
 
@@ -20,7 +28,7 @@ export default class ActivityStore {
 
     reaction(
       () => this.predicate.keys(),
-      () => {        
+      () => {
         this.setPage(0);
         this.activityRegistry.clear();
         this.loadActivities();
@@ -40,7 +48,6 @@ export default class ActivityStore {
   @observable predicate = new Map();
 
   @action setPredicate = (predicate: string, value: string | Date) => {
-  
     this.predicate.clear();
     if (predicate !== "all") {
       this.predicate.set(predicate, value);
@@ -72,7 +79,7 @@ export default class ActivityStore {
   @action createHubConnection = (activityId: string) => {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(process.env.REACT_APP_API_CHAT_URL!, {
-        accessTokenFactory: () => this.rootStore.commonStore.token!,
+        accessTokenFactory: () => this.checkTokenAndRefreshIfExpired(),
       })
       .configureLogging(LogLevel.Information)
       .build();
@@ -80,7 +87,11 @@ export default class ActivityStore {
     this.hubConnection
       .start()
       .then(() => console.log(this.hubConnection?.state))
-      .then(() => this.hubConnection!.invoke("AddToGroup", this.activity!.id))
+      .then(() => {
+        if (this.hubConnection!.state === "Connected") {
+          this.hubConnection!.invoke("AddToGroup", this.activity!.id);
+        }
+      })
       .catch((error) => console.log("Error establishing connection", error));
 
     this.hubConnection.on("ReceiveComment", (comment) => {
@@ -92,6 +103,23 @@ export default class ActivityStore {
     this.hubConnection.on("Send", (message) => {
       toast.info(message);
     });
+  };
+
+  checkTokenAndRefreshIfExpired = async () => {
+    const token = localStorage.getItem("jwt");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (token && refreshToken) {
+      const decodedToken: any = jwt.decode(token);
+      if (decodedToken && Date.now() >= decodedToken.exp * 1000 - 5000) {
+        try {
+          return await agent.User.refreshToken(token, refreshToken);
+        } catch (error) {
+          toast.error("Problem connecting to chat.");
+        }
+      } else {
+        return token;
+      }
+    }
   };
 
   @action stopConnection = () => {
@@ -137,7 +165,7 @@ export default class ActivityStore {
 
   @action loadActivities = async () => {
     this.loadingInitial = true;
-  
+
     try {
       const activitiesEnvelope = await agent.Activities.list(this.axiosParams);
       const { activities, activityCount } = activitiesEnvelope;
@@ -145,7 +173,7 @@ export default class ActivityStore {
       runInAction("loading activities", () => {
         activities.forEach((activity) => {
           setActivityProps(activity, this.rootStore.userStore.user!);
-          this.activityRegistry.set(activity.id, activity);        
+          this.activityRegistry.set(activity.id, activity);
         });
         this.activityCount = activityCount;
         this.loadingInitial = false;
@@ -162,7 +190,7 @@ export default class ActivityStore {
     return this.activityRegistry.get(id);
   };
 
-  @action loadActivity = async (id: string) => {    
+  @action loadActivity = async (id: string) => {
     let activity = this.getActivity(id);
     if (activity) {
       this.activity = activity;

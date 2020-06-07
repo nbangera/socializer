@@ -4,6 +4,7 @@ using Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -50,11 +51,17 @@ namespace Application.User
                 var result = await _signinManager.CheckPasswordSignInAsync(user, request.Password, false);
                 if (result.Succeeded)
                 {
+                    user.RefreshToken = _jwtGenerator.GenerateRefreshToken();
+                    user.RefreshTokenExpiry = DateTime.Now.AddDays(30);
+
+                    await _userManager.UpdateAsync(user);
+                    
                     return new User{
                         DisplayName = user.DisplayName,
                         UserName = user.UserName,
                         Image = user.Photos.SingleOrDefault(x=>x.IsMain)?.Url,
-                        Token = _jwtGenerator.CreateToken(user)
+                        Token = _jwtGenerator.CreateToken(user),
+                        RefreshToken = user.RefreshToken,                        
                     };
                 }
                 throw new RestException(HttpStatusCode.Unauthorized);

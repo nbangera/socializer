@@ -34,6 +34,7 @@ export default class UserStore {
       const user = await agent.User.login(values);
       runInAction("login", () => {
         this.rootStore.commonStore.setToken(user.token);
+        this.rootStore.commonStore.setRefreshToken(user.refreshToken);
         this.user = user;
       });
     } catch (error) {
@@ -47,6 +48,7 @@ export default class UserStore {
       const user = await agent.User.register(values);
       runInAction("register", () => {
         this.rootStore.commonStore.setToken(user.token);
+        this.rootStore.commonStore.setRefreshToken(user.refreshToken);
         this.user = user;
       });
     } catch (error) {
@@ -57,6 +59,7 @@ export default class UserStore {
 
   @action logout = async () => {
     this.rootStore.commonStore.setToken(null);
+    this.rootStore.commonStore.setRefreshToken(null);
     this.user = null;
     history.push("/");
   };
@@ -68,6 +71,7 @@ export default class UserStore {
       runInAction("fbLogin", () => {
         this.user = user;
         this.rootStore.commonStore.setToken(user.token);
+        this.rootStore.commonStore.setRefreshToken(user.refreshToken);
         this.rootStore.modalStore.closeModal();
         history.push("/activities");
         this.loading = false;
